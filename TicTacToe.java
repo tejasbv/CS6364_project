@@ -192,7 +192,7 @@ public class TicTacToe extends JFrame
    // /opt/local/bin/swipl /javalib/TicTacToe/ttt.pl
    public static void main(String[] args) {
       String prolog = "/usr/bin/swipl";
-      String ttt = "/home/midnight-wrangler/Documents/lab/ttt-DrFisher(1)(1)/ttt-fisher/ttt.pl";
+      String ttt = "ttt.pl";
       boolean noargs = true;
       try {
          prolog = args[0];
