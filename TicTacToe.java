@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.*;
 import javax.swing.*;
 import javax.swing.border.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class TicTacToe extends JFrame
       implements ActionListener {
@@ -15,6 +16,8 @@ public class TicTacToe extends JFrame
    BufferedWriter bw;
    Thread connection;
    Process prologProcess;
+   int currGame = 0;
+   boolean GameOver = false;
    boolean playNgames = false;
    int NGames = 0;
    String prolog;
@@ -86,7 +89,8 @@ public class TicTacToe extends JFrame
          @Override
          public void actionPerformed(ActionEvent e) {
             // Implement the logic to restart the game
-            clearGameBoard();
+            reset();
+            setupHVC();
          }
       });
       JButton button2 = new JButton("start N games");
@@ -99,6 +103,14 @@ public class TicTacToe extends JFrame
                // Convert the input to an integer and save it in the global variable
                NGames = Integer.parseInt(input);
                System.out.println(NGames);
+               playNgames = true;
+               // cvc();
+               reset();
+               setupCVC();
+               // for (int i = 0; i < NGames; i++) {
+               // reset();
+               // setupCVC();
+               // }
             } catch (NumberFormatException ex) {
                JOptionPane.showMessageDialog(null, "Invalid input. Please enter a valid number.");
             }
@@ -109,17 +121,25 @@ public class TicTacToe extends JFrame
       button3.addActionListener(new ActionListener() {
          @Override
          public void actionPerformed(ActionEvent e) {
+            reset();
             try {
-               bw.write("(-3,-3)." + "\n");
+               Thread.sleep(100);
+            } catch (InterruptedException xx) {
+               xx.printStackTrace();
+            }
+            try {
+               bw.write("(-1,-1)." + "\n");
                System.out.println("custom");
                bw.flush();
-
+               bw.write("(3,2)." + "\n");
+               System.out.println("custom");
+               bw.flush();
             } catch (Exception xx) {
                System.out.println(xx);
             }
-            playNgames = true;
-            // b33.setText("X");
-            myturn = true;
+
+            b32.setText("X");
+            myturn = false;
             if (winner())
                connection.stop();
             String s;
@@ -201,7 +221,19 @@ public class TicTacToe extends JFrame
             System.exit(0);
          }
       });
+      try {
+         Thread.sleep(100);
+         try {
+            bw.write("(-1,-1)." + "\n");
+            System.out.println("custom");
+            bw.flush();
 
+         } catch (Exception xx) {
+            System.out.println(xx);
+         }
+      } catch (InterruptedException e) {
+         e.printStackTrace();
+      }
    }
 
    // /opt/local/bin/swipl /javalib/TicTacToe/ttt.pl
@@ -267,11 +299,10 @@ public class TicTacToe extends JFrame
          myturn = true;
          try {
             Thread.sleep(100);
-          } catch (InterruptedException e) {
+         } catch (InterruptedException e) {
             e.printStackTrace();
-          }
-      }
-      else{
+         }
+      } else {
          if (x == 1) {
             if (y == 1)
                b11.setText("X");
@@ -297,15 +328,20 @@ public class TicTacToe extends JFrame
          myturn = false;
          try {
             Thread.sleep(100);
-          } catch (InterruptedException e) {
+         } catch (InterruptedException e) {
             e.printStackTrace();
-          }
+         }
       }
-      if (winner())
-         connection.stop();
+      if (winner()){
+         if(playNgames)
+            cvc();
+         else
+            connection.stop();
+         
+      }
       // else
-         // myturn = true;
-         // winner();
+      // myturn = true;
+      // winner();
    }
 
    /**
@@ -360,13 +396,14 @@ public class TicTacToe extends JFrame
             c.setBackground(Color.green);
             d.setBackground(Color.green);
          }
+         GameOver = true;
          return true;
       } else
          return false;
    }
 
-   private void clearGameBoard() {
-
+   private void reset() {
+      GameOver = false;
       b11.setText("");
       b21.setText("");
       b31.setText("");
@@ -433,6 +470,154 @@ public class TicTacToe extends JFrame
 
    }
 
+   public void setupHVC() {
+
+      try {
+         Thread.sleep(100);
+         try {
+            bw.write("(1,1)." + "\n");
+            System.out.println("custom");
+            bw.flush();
+
+         } catch (Exception xx) {
+            System.out.println(xx);
+         }
+      } catch (InterruptedException e) {
+         e.printStackTrace();
+      }
+   }
+
+   public void setupCVC() {
+
+      try {
+         Thread.sleep(100);
+         try {
+            bw.write("(-1,-1)." + "\n");
+            System.out.println("CVC");
+            bw.flush();
+            int x = ThreadLocalRandom.current().nextInt(1, 4);
+            int y = ThreadLocalRandom.current().nextInt(1, 4);
+            System.out.println("Ngames:\ncurrGame:"+currGame+"\nx:"+x+"   y:"+y);
+            if (x == 1) {
+               if (y == 1) {
+                  b11.setText("X");
+                  try {
+                     bw.write("(1,1)." + "\n");
+                     System.out.println("custom");
+                     bw.flush();
+                  } catch (Exception xx) {
+                     System.out.println(xx);
+                  }
+               }
+
+               else if (y == 2) {
+                  b12.setText("X");
+                  try {
+                     bw.write("(1,2)." + "\n");
+                     System.out.println("custom");
+                     bw.flush();
+                  } catch (Exception xx) {
+                     System.out.println(xx);
+                  }
+               }
+
+               else if (y == 3) {
+                  b13.setText("X");
+                  try {
+                     bw.write("(1,3)." + "\n");
+                     System.out.println("custom");
+                     bw.flush();
+                  } catch (Exception xx) {
+                     System.out.println(xx);
+                  }
+               }
+            } else if (x == 2) {
+               if (y == 1) {
+                  b21.setText("X");
+                  try {
+                     bw.write("(2,1)." + "\n");
+                     System.out.println("custom");
+                     bw.flush();
+                  } catch (Exception xx) {
+                     System.out.println(xx);
+                  }
+               }
+
+               else if (y == 2) {
+                  b22.setText("X");
+                  try {
+                     bw.write("(2,2)." + "\n");
+                     System.out.println("custom");
+                     bw.flush();
+                  } catch (Exception xx) {
+                     System.out.println(xx);
+                  }
+               }
+
+               else if (y == 3) {
+                  b23.setText("X");
+                  try {
+                     bw.write("(2,3)." + "\n");
+                     System.out.println("custom");
+                     bw.flush();
+                  } catch (Exception xx) {
+                     System.out.println(xx);
+                  }
+               }
+
+            } else if (x == 3) {
+               if (y == 1) {
+                  b31.setText("X");
+                  try {
+                     bw.write("(3,1)." + "\n");
+                     System.out.println("custom");
+                     bw.flush();
+                  } catch (Exception xx) {
+                     System.out.println(xx);
+                  }
+               }
+
+               else if (y == 2) {
+                  b32.setText("X");
+                  try {
+                     bw.write("(3,2)." + "\n");
+                     System.out.println("custom");
+                     bw.flush();
+                  } catch (Exception xx) {
+                     System.out.println(xx);
+                  }
+               }
+
+               else if (y == 3) {
+                  b33.setText("X");
+                  try {
+                     bw.write("(3,3)." + "\n");
+                     System.out.println("custom");
+                     bw.flush();
+                  } catch (Exception xx) {
+                     System.out.println(xx);
+                  }
+               }
+
+            }
+
+         } catch (Exception xx) {
+            System.out.println(xx);
+         }
+      } catch (InterruptedException e) {
+         e.printStackTrace();
+      }
+   }
+
+   public void cvc() {
+      if (currGame == NGames) {
+         return;
+      } else {
+         reset();
+         setupCVC();
+         currGame++;
+      }
+   }
 }
 
 /*
