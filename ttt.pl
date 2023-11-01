@@ -190,18 +190,24 @@ connect(Port) :-
 :- connect(54321).  % Comment out for testing
 
 ttt :- 
-    
    board(B),
    alpha_beta(o,2,B,-200,200,(U,V),_Value), 
    record(o,U,V),
    connectedWriteStream(OStream), 
    write(OStream,(U,V)), 
    nl(OStream), flush_output(OStream),
-   connectedReadStream(IStream), 
-   read(IStream,(X,Y)),
-   record(x,X,Y),
-   flush_output(OStream),
    ttt.
 
-:- ttt.  % Comment out for testing
+tty :-
+   connectedReadStream(IStream), 
+   read(IStream,(X,Y)),
+   record(x,X,Y), 
+   board(B),
+   alpha_beta(o,2,B,-200,200,(U,V),_Value), 
+   record(o,U,V),
+   connectedWriteStream(OStream), 
+   write(OStream,(U,V)), 
+   nl(OStream), flush_output(OStream),
+   ttt.
+:- tty.  % Comment out for testing
 

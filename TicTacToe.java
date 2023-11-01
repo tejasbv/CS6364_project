@@ -85,34 +85,52 @@ public class TicTacToe extends JFrame
       button1.addActionListener(new ActionListener() {
          @Override
          public void actionPerformed(ActionEvent e) {
-             // Implement the logic to restart the game
-             clearGameBoard();
+            // Implement the logic to restart the game
+            clearGameBoard();
          }
-     });
+      });
       JButton button2 = new JButton("start N games");
       button2.addActionListener(new ActionListener() {
          @Override
          public void actionPerformed(ActionEvent e) {
-             // Create an input dialog to get a number from the user
-             String input = JOptionPane.showInputDialog("Enter a number:");
-             try {
-                 // Convert the input to an integer and save it in the global variable
-                 NGames = Integer.parseInt(input);
-                 System.out.println(NGames);
-             } catch (NumberFormatException ex) {
-                 JOptionPane.showMessageDialog(null, "Invalid input. Please enter a valid number.");
-             }
-
-             
+            // Create an input dialog to get a number from the user
+            String input = JOptionPane.showInputDialog("Enter a number:");
+            try {
+               // Convert the input to an integer and save it in the global variable
+               NGames = Integer.parseInt(input);
+               System.out.println(NGames);
+            } catch (NumberFormatException ex) {
+               JOptionPane.showMessageDialog(null, "Invalid input. Please enter a valid number.");
             }
-     });
-      JButton button3 = new JButton("Button 3");
 
+         }
+      });
+      JButton button3 = new JButton("Button 3");
+      button3.addActionListener(new ActionListener() {
+         @Override
+         public void actionPerformed(ActionEvent e) {
+            try {
+               bw.write("(-3,-3)." + "\n");
+               System.out.println("custom");
+               bw.flush();
+
+            } catch (Exception xx) {
+               System.out.println(xx);
+            }
+            playNgames = true;
+            // b33.setText("X");
+            myturn = true;
+            if (winner())
+               connection.stop();
+            String s;
+
+         }
+      });
       // Add ActionListeners to your control panel buttons if needed
 
       // Add the buttons to the control panel
       controlPanel.add(button1);
-      // controlPanel.add(button2);
+      controlPanel.add(button2);
       controlPanel.add(button3);
 
       // Create a container panel to hold both the game panel and the control panel
@@ -174,7 +192,7 @@ public class TicTacToe extends JFrame
       } catch (Exception xx) {
          System.out.println(xx);
       }
-      
+
       // On closing, kill the prolog process first and then exit
       this.addWindowListener(new WindowAdapter() {
          public void windowClosing(WindowEvent w) {
@@ -183,10 +201,7 @@ public class TicTacToe extends JFrame
             System.exit(0);
          }
       });
-      
-      
- 
-   
+
    }
 
    // /opt/local/bin/swipl /javalib/TicTacToe/ttt.pl
@@ -208,10 +223,11 @@ public class TicTacToe extends JFrame
          message[2] = new Label("  where ttt.pl ");
          message[3] = new JTextField(ttt);
          try {
-            // int I = JOptionPane.showConfirmDialog(null, message, "Where are Prolog and ttt.pl? ",
-            //       JOptionPane.OK_CANCEL_OPTION);
+            // int I = JOptionPane.showConfirmDialog(null, message, "Where are Prolog and
+            // ttt.pl? ",
+            // JOptionPane.OK_CANCEL_OPTION);
             // if (I == 2 | I == 1)
-            //    System.exit(0);
+            // System.exit(0);
             // System.out.println(I);
             new TicTacToe(((JTextField) message[1]).getText().trim(), ((JTextField) message[3]).getText().trim());
          } catch (Exception yy) {
@@ -225,32 +241,71 @@ public class TicTacToe extends JFrame
       int x = Integer.parseInt(c[0].trim()),
             y = Integer.parseInt(c[1].trim());
       // System.out.println(x+","+y) ;
-      if (x == 1) {
-         if (y == 1)
-            b11.setText("O");
-         else if (y == 2)
-            b12.setText("O");
-         else if (y == 3)
-            b13.setText("O");
-      } else if (x == 2) {
-         if (y == 1)
-            b21.setText("O");
-         else if (y == 2)
-            b22.setText("O");
-         else if (y == 3)
-            b23.setText("O");
-      } else if (x == 3) {
-         if (y == 1)
-            b31.setText("O");
-         else if (y == 2)
-            b32.setText("O");
-         else if (y == 3)
-            b33.setText("O");
+      if (!myturn) {
+         if (x == 1) {
+            if (y == 1)
+               b11.setText("O");
+            else if (y == 2)
+               b12.setText("O");
+            else if (y == 3)
+               b13.setText("O");
+         } else if (x == 2) {
+            if (y == 1)
+               b21.setText("O");
+            else if (y == 2)
+               b22.setText("O");
+            else if (y == 3)
+               b23.setText("O");
+         } else if (x == 3) {
+            if (y == 1)
+               b31.setText("O");
+            else if (y == 2)
+               b32.setText("O");
+            else if (y == 3)
+               b33.setText("O");
+         }
+         myturn = true;
+         try {
+            Thread.sleep(100);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+      }
+      else{
+         if (x == 1) {
+            if (y == 1)
+               b11.setText("X");
+            else if (y == 2)
+               b12.setText("X");
+            else if (y == 3)
+               b13.setText("X");
+         } else if (x == 2) {
+            if (y == 1)
+               b21.setText("X");
+            else if (y == 2)
+               b22.setText("X");
+            else if (y == 3)
+               b23.setText("X");
+         } else if (x == 3) {
+            if (y == 1)
+               b31.setText("X");
+            else if (y == 2)
+               b32.setText("X");
+            else if (y == 3)
+               b33.setText("X");
+         }
+         myturn = false;
+         try {
+            Thread.sleep(100);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
       }
       if (winner())
          connection.stop();
-      else
-         myturn = true;
+      // else
+         // myturn = true;
+         // winner();
    }
 
    /**
@@ -311,8 +366,7 @@ public class TicTacToe extends JFrame
    }
 
    private void clearGameBoard() {
-      
-      
+
       b11.setText("");
       b21.setText("");
       b31.setText("");
@@ -322,7 +376,7 @@ public class TicTacToe extends JFrame
       b13.setText("");
       b23.setText("");
       b33.setText("");
-      
+
       b11.setBackground(null);
       b21.setBackground(null);
       b31.setBackground(null);
@@ -342,7 +396,7 @@ public class TicTacToe extends JFrame
       }
       // Add any other game state reset logic here
       connection.stop();
-      
+
       prologProcess.destroy();
       myturn = true;
 
@@ -369,8 +423,6 @@ public class TicTacToe extends JFrame
       };
       connection.start();
 
-      
-
       try {
          prologProcess = Runtime.getRuntime().exec(prolog + " -f " + ttt);
       } catch (Exception xx) {
@@ -378,8 +430,8 @@ public class TicTacToe extends JFrame
       }
 
       // On closing, kill the prolog process first and then exit
-     
-  }
+
+   }
 
 }
 
