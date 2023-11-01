@@ -190,26 +190,18 @@ connect(Port) :-
 :- connect(54321).  % Comment out for testing
 
 ttt :- 
+    
+   board(B),
+   alpha_beta(o,2,B,-200,200,(U,V),_Value), 
+   record(o,U,V),
+   connectedWriteStream(OStream), 
+   write(OStream,(U,V)), 
+   nl(OStream), flush_output(OStream),
    connectedReadStream(IStream), 
-   read(IStream, (X, Y)),
-   (X = -1, Y = -1 ->  % Check if the Java GUI sent (-1,-1) command
-       % Computer's first move (you can customize this move)
-       alpha_beta(o, 2, [_, _, _, _, x, _, _, _, _], -200, 200, (U, V), _Value),
-       record(o, U, V),
-       connectedWriteStream(OStream),
-       write(OStream, (U, V)),
-       nl(OStream),
-       flush_output(OStream)
-   ;  % If not (-1,-1), the human player made a move
-      record(x, X, Y),
-      board(B),
-      alpha_beta(o, 2, B, -200, 200, (U, V), _Value),
-      record(o, U, V),
-      connectedWriteStream(OStream),
-      write(OStream, (U, V)),
-      nl(OStream),
-      flush_output(OStream)
-   ).
+   read(IStream,(X,Y)),
+   record(x,X,Y),
+   flush_output(OStream),
+   ttt.
 
 :- ttt.  % Comment out for testing
 
