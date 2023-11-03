@@ -27,8 +27,11 @@ public class TicTacToe extends JFrame
    boolean WinnerMessageShown = false;
    JLabel PlayerInfo;
    JLabel GameStats;
+   JRadioButton option1;
    JPanel controlPanel;
    boolean player1Human = true;
+   String filePath = "ttt-java-log.txt";
+   FileWriter fileWriter;
 
    /**
     * Create a tic tac toe game,
@@ -38,6 +41,13 @@ public class TicTacToe extends JFrame
    public TicTacToe(String prolog, String ttt) {
       this.prolog = prolog;
       this.ttt = ttt;
+      try {
+         fileWriter = new FileWriter(filePath);
+         fileWriter.write("Game Started");
+      } catch (IOException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
       b11 = new JButton("");
       b21 = new JButton("");
       b31 = new JButton("");
@@ -91,11 +101,14 @@ public class TicTacToe extends JFrame
       controlPanel.setLayout(new GridLayout(7, 1)); // 3 rows for 3 buttons
 
       // Create three buttons for the control panel
+      PlayerInfo = new JLabel("Player1 (X): human;   Player2 (O): Computer");
+
       JButton button1 = new JButton("New Game");
       button1.addActionListener(new ActionListener() {
          @Override
          public void actionPerformed(ActionEvent e) {
             // Implement the logic to restart the game
+            writeToFile("New Human Vs. Computer game started");
             reset();
             setupHVC();
          }
@@ -106,6 +119,11 @@ public class TicTacToe extends JFrame
          public void actionPerformed(ActionEvent e) {
             // Create an input dialog to get a number from the user
             String input = JOptionPane.showInputDialog("Enter a number:");
+            scoreX = 0;
+            scoreO = 0;
+            PlayerInfo.setText("Player1 (X): Computer;   Player2 (O): Computer");
+            writeToFile("New Computer Vs. Computer game started");
+
             try {
                // Convert the input to an integer and save it in the global variable
                currGame = 0;
@@ -131,33 +149,27 @@ public class TicTacToe extends JFrame
       button3.addActionListener(new ActionListener() {
          @Override
          public void actionPerformed(ActionEvent e) {
+            writeToFile("Reset");
+
             reset();
+            myturn = false;
             try {
                Thread.sleep(100);
-            } catch (InterruptedException xx) {
-               xx.printStackTrace();
-            }
-            try {
-               bw.write("(-1,-1)." + "\n");
-               System.out.println("custom");
-               bw.flush();
-               bw.write("(3,2)." + "\n");
-               System.out.println("custom");
-               bw.flush();
-            } catch (Exception xx) {
-               System.out.println(xx);
-            }
+               try {
+                  bw.write("(1,1)." + "\n");
+                  System.out.println("custom");
+                  bw.flush();
 
-            b32.setText("X");
-            myturn = false;
-            if (winner())
-               connection.stop();
-            String s;
+               } catch (Exception xx) {
+                  System.out.println(xx);
+               }
+            } catch (InterruptedException ex) {
+               ex.printStackTrace();
+            }
 
          }
       });
-      PlayerInfo = new JLabel("Player1 (X): human;   Player2 (O): Computer");
-      JRadioButton option1 = new JRadioButton("Player1 (X) is Human");
+      option1 = new JRadioButton("Player1 (X) is Human");
       JRadioButton option2 = new JRadioButton("Player1 (X) is Computer");
       option1.addItemListener(new ItemListener() {
          @Override
@@ -165,11 +177,17 @@ public class TicTacToe extends JFrame
             if (e.getStateChange() == ItemEvent.SELECTED) {
                // Radio button is selected
                player1Human = true;
+               PlayerInfo.setText("Player1 (X): Human;   Player2 (O): Computer");
+               writeToFile("First Player Changed to Human");
+
                System.out.println("Selected");
                // Add your action here
             } else if (e.getStateChange() == ItemEvent.DESELECTED) {
                // Radio button is deselected
                player1Human = false;
+               PlayerInfo.setText("Player1 (X): Computer;   Player2 (O): Human");
+               writeToFile("First Player Changed to Computer");
+
                System.out.println("Deselected");
                // Add your action here
             }
@@ -259,6 +277,13 @@ public class TicTacToe extends JFrame
          public void windowClosing(WindowEvent w) {
             if (prologProcess != null)
                prologProcess.destroy();
+            writeToFile("GAME OVER!!");
+            try {
+               fileWriter.close();
+            } catch (IOException e) {
+               // TODO Auto-generated catch block
+               e.printStackTrace();
+            }
             System.exit(0);
          }
       });
@@ -317,6 +342,8 @@ public class TicTacToe extends JFrame
 
       if (!GameOver) {
          if (!myturn) {
+            writeToFile("Computer (O) takes step ("+x+","+y+")");
+
             if (x == 1) {
                if (y == 1)
                   b11.setText("O");
@@ -346,6 +373,7 @@ public class TicTacToe extends JFrame
             // e.printStackTrace();
             // }
          } else {
+            writeToFile("Computer (X) takes step ("+x+","+y+")");
             if (x == 1) {
                if (y == 1)
                   b11.setText("X");
@@ -375,22 +403,22 @@ public class TicTacToe extends JFrame
             // e.printStackTrace();
             // }
          }
-      }
+         if (winner()) {
+            try {
+               Thread.sleep(1000);
+            } catch (InterruptedException e) {
+               e.printStackTrace();
+            }
 
-      if (winner()) {
-         try {
-            Thread.sleep(1000);
-         } catch (InterruptedException e) {
-            e.printStackTrace();
+            if (playNgames && GameOver)
+               cvc();
+
+            // else
+            // connection.stop();
+
          }
-
-         if (playNgames && GameOver)
-            cvc();
-
-         // else
-         // connection.stop();
-
       }
+
       // else
       // myturn = true;
       // winner()
@@ -407,6 +435,7 @@ public class TicTacToe extends JFrame
          if (!s.equals(""))
             return;
          ((JButton) (act.getSource())).setText("X");
+         writeToFile("Human (X) takes step "+act.getActionCommand());
          try {
             bw.write(act.getActionCommand() + "\n");
             System.out.println(act.getActionCommand());
@@ -458,7 +487,7 @@ public class TicTacToe extends JFrame
             c.setBackground(Color.green);
             d.setBackground(Color.green);
             scoreX += 1;
-            if (!WinnerMessageShown && !playNgames)
+            if (!WinnerMessageShown && !playNgames && !myturn)
                JOptionPane.showMessageDialog(this, "Player 1 (X) won the game", "Winner Announcement",
                      JOptionPane.INFORMATION_MESSAGE);
             WinnerMessageShown = true;
@@ -516,7 +545,7 @@ public class TicTacToe extends JFrame
 
       prologProcess.destroy();
       myturn = true;
-
+      // option1.setSelected(true);
       Socket sock;
       try {
          sock = new Socket("127.0.0.1", 54321);
@@ -787,6 +816,16 @@ public class TicTacToe extends JFrame
          reset();
          setupCVC();
          currGame++;
+      }
+   }
+
+   public void writeToFile(String s) {
+      try {
+         fileWriter.write(s);
+         fileWriter.write("\n");
+      } catch (IOException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
       }
    }
 }

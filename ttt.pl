@@ -206,7 +206,7 @@ tct :-
    connectedReadStream(IStream), 
    read(IStream,(X,Y)),
    record(x,X,Y), 
-   ttt.
+   tct.
 
 ttc :- 
    board(B),
