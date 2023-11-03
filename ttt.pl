@@ -192,7 +192,21 @@ connect(Port) :-
 ttx :-
    connectedReadStream(IStream),
    read(IStream, (X, Y)),
-   (X = -1, Y = -1 -> tty; ttt).
+   (X = -1, Y = -1 -> tty;
+    X = 2, Y = 2 -> tct;
+    ttt).
+
+tct :-
+   board(B),
+   alpha_beta(o,2,B,-200,200,(U,V),_Value), 
+   record(o,U,V),
+   connectedWriteStream(OStream), 
+   write(OStream,(U,V)), 
+   nl(OStream), flush_output(OStream),
+   connectedReadStream(IStream), 
+   read(IStream,(X,Y)),
+   record(x,X,Y), 
+   ttt.
 
 ttc :- 
    board(B),

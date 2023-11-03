@@ -22,6 +22,13 @@ public class TicTacToe extends JFrame
    int NGames = 0;
    String prolog;
    String ttt;
+   int scoreX = 0;
+   int scoreO = 0;
+   boolean WinnerMessageShown = false;
+   JLabel PlayerInfo;
+   JLabel GameStats;
+   JPanel controlPanel;
+   boolean player1Human = true;
 
    /**
     * Create a tic tac toe game,
@@ -80,8 +87,8 @@ public class TicTacToe extends JFrame
       panel.add(b23);
       panel.add(b33);
 
-      JPanel controlPanel = new JPanel();
-      controlPanel.setLayout(new GridLayout(3, 1)); // 3 rows for 3 buttons
+      controlPanel = new JPanel();
+      controlPanel.setLayout(new GridLayout(7, 1)); // 3 rows for 3 buttons
 
       // Create three buttons for the control panel
       JButton button1 = new JButton("New Game");
@@ -101,21 +108,24 @@ public class TicTacToe extends JFrame
             String input = JOptionPane.showInputDialog("Enter a number:");
             try {
                // Convert the input to an integer and save it in the global variable
+               currGame = 0;
                NGames = Integer.parseInt(input);
                System.out.println(NGames);
                playNgames = true;
-               // cvc();
-               reset();
-               setupCVC();
+               cvc();
+               // reset();
+               // setupCVC();
                // for (int i = 0; i < NGames; i++) {
                // reset();
                // setupCVC();
                // }
+
             } catch (NumberFormatException ex) {
                JOptionPane.showMessageDialog(null, "Invalid input. Please enter a valid number.");
             }
 
          }
+
       });
       JButton button3 = new JButton("Button 3");
       button3.addActionListener(new ActionListener() {
@@ -146,12 +156,43 @@ public class TicTacToe extends JFrame
 
          }
       });
+      PlayerInfo = new JLabel("Player1 (X): human;   Player2 (O): Computer");
+      JRadioButton option1 = new JRadioButton("Player1 (X) is Human");
+      JRadioButton option2 = new JRadioButton("Player1 (X) is Computer");
+      option1.addItemListener(new ItemListener() {
+         @Override
+         public void itemStateChanged(ItemEvent e) {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+               // Radio button is selected
+               player1Human = true;
+               System.out.println("Selected");
+               // Add your action here
+            } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+               // Radio button is deselected
+               player1Human = false;
+               System.out.println("Deselected");
+               // Add your action here
+            }
+         }
+      });
+      option1.setSelected(true);
+      // "<html>Line 1<br>Line 2<br>Line 3</html>"
+      GameStats = new JLabel(
+            "<html>CurrentGame:" + currGame + "/" + NGames + "<br>scores:<br>X:" + scoreX + "&emsp;O:" + scoreO);
+      // Create a ButtonGroup to group the radio buttons
+      ButtonGroup buttonGroup = new ButtonGroup();
+      buttonGroup.add(option1);
+      buttonGroup.add(option2);
       // Add ActionListeners to your control panel buttons if needed
 
       // Add the buttons to the control panel
       controlPanel.add(button1);
       controlPanel.add(button2);
       controlPanel.add(button3);
+      controlPanel.add(PlayerInfo);
+      controlPanel.add(GameStats);
+      controlPanel.add(option1);
+      controlPanel.add(option2);
 
       // Create a container panel to hold both the game panel and the control panel
       JPanel containerPanel = new JPanel();
@@ -224,7 +265,7 @@ public class TicTacToe extends JFrame
       try {
          Thread.sleep(100);
          try {
-            bw.write("(-1,-1)." + "\n");
+            bw.write("(1,1)." + "\n");
             System.out.println("custom");
             bw.flush();
 
@@ -273,97 +314,111 @@ public class TicTacToe extends JFrame
       int x = Integer.parseInt(c[0].trim()),
             y = Integer.parseInt(c[1].trim());
       // System.out.println(x+","+y) ;
-      if (!myturn) {
-         if (x == 1) {
-            if (y == 1)
-               b11.setText("O");
-            else if (y == 2)
-               b12.setText("O");
-            else if (y == 3)
-               b13.setText("O");
-         } else if (x == 2) {
-            if (y == 1)
-               b21.setText("O");
-            else if (y == 2)
-               b22.setText("O");
-            else if (y == 3)
-               b23.setText("O");
-         } else if (x == 3) {
-            if (y == 1)
-               b31.setText("O");
-            else if (y == 2)
-               b32.setText("O");
-            else if (y == 3)
-               b33.setText("O");
-         }
-         myturn = true;
-         try {
-            Thread.sleep(100);
-         } catch (InterruptedException e) {
-            e.printStackTrace();
-         }
-      } else {
-         if (x == 1) {
-            if (y == 1)
-               b11.setText("X");
-            else if (y == 2)
-               b12.setText("X");
-            else if (y == 3)
-               b13.setText("X");
-         } else if (x == 2) {
-            if (y == 1)
-               b21.setText("X");
-            else if (y == 2)
-               b22.setText("X");
-            else if (y == 3)
-               b23.setText("X");
-         } else if (x == 3) {
-            if (y == 1)
-               b31.setText("X");
-            else if (y == 2)
-               b32.setText("X");
-            else if (y == 3)
-               b33.setText("X");
-         }
-         myturn = false;
-         try {
-            Thread.sleep(100);
-         } catch (InterruptedException e) {
-            e.printStackTrace();
+
+      if (!GameOver) {
+         if (!myturn) {
+            if (x == 1) {
+               if (y == 1)
+                  b11.setText("O");
+               else if (y == 2)
+                  b12.setText("O");
+               else if (y == 3)
+                  b13.setText("O");
+            } else if (x == 2) {
+               if (y == 1)
+                  b21.setText("O");
+               else if (y == 2)
+                  b22.setText("O");
+               else if (y == 3)
+                  b23.setText("O");
+            } else if (x == 3) {
+               if (y == 1)
+                  b31.setText("O");
+               else if (y == 2)
+                  b32.setText("O");
+               else if (y == 3)
+                  b33.setText("O");
+            }
+            myturn = true;
+            // try {
+            // Thread.sleep(100);
+            // } catch (InterruptedException e) {
+            // e.printStackTrace();
+            // }
+         } else {
+            if (x == 1) {
+               if (y == 1)
+                  b11.setText("X");
+               else if (y == 2)
+                  b12.setText("X");
+               else if (y == 3)
+                  b13.setText("X");
+            } else if (x == 2) {
+               if (y == 1)
+                  b21.setText("X");
+               else if (y == 2)
+                  b22.setText("X");
+               else if (y == 3)
+                  b23.setText("X");
+            } else if (x == 3) {
+               if (y == 1)
+                  b31.setText("X");
+               else if (y == 2)
+                  b32.setText("X");
+               else if (y == 3)
+                  b33.setText("X");
+            }
+            myturn = false;
+            // try {
+            // Thread.sleep(100);
+            // } catch (InterruptedException e) {
+            // e.printStackTrace();
+            // }
          }
       }
-      if (winner()){
-         if(playNgames)
+
+      if (winner()) {
+         try {
+            Thread.sleep(1000);
+         } catch (InterruptedException e) {
+            e.printStackTrace();
+         }
+
+         if (playNgames && GameOver)
             cvc();
-         else
-            connection.stop();
-         
+
+         // else
+         // connection.stop();
+
       }
       // else
       // myturn = true;
-      // winner();
+      // winner()
    }
 
    /**
     * Java player
     */
    public void actionPerformed(ActionEvent act) {
-      if (!myturn)
-         return; // otherwise
-      String s = ((JButton) act.getSource()).getText();
-      if (!s.equals(""))
-         return;
-      ((JButton) (act.getSource())).setText("X");
-      try {
-         bw.write(act.getActionCommand() + "\n");
-         System.out.println(act.getActionCommand());
-         bw.flush();
-      } catch (Exception xx) {
-         System.out.println(xx);
+      if (!GameOver) {
+         if (!myturn)
+            return; // otherwise
+         String s = ((JButton) act.getSource()).getText();
+         if (!s.equals(""))
+            return;
+         ((JButton) (act.getSource())).setText("X");
+         try {
+            bw.write(act.getActionCommand() + "\n");
+            System.out.println(act.getActionCommand());
+            bw.flush();
+         } catch (Exception xx) {
+            System.out.println(xx);
+         }
+         myturn = false;
+         // if (winner())
+         // connection.stop();
+         winner();
       }
-      myturn = false;
-      if (winner())
-         connection.stop();
    }
 
    /**
@@ -387,23 +442,47 @@ public class TicTacToe extends JFrame
    boolean line(JButton b, JButton c, JButton d) {
       if (!b.getText().equals("") && b.getText().equals(c.getText()) &&
             c.getText().equals(d.getText())) {
+         GameOver = true;
+
          if (b.getText().equals("O")) {
             b.setBackground(Color.red);
             c.setBackground(Color.red);
             d.setBackground(Color.red);
+            scoreO += 1;
+            if (!WinnerMessageShown && !playNgames)
+               JOptionPane.showMessageDialog(this, "Player 2 (O) won the game", "Winner Announcement",
+                     JOptionPane.INFORMATION_MESSAGE);
+            WinnerMessageShown = true;
          } else {
             b.setBackground(Color.green);
             c.setBackground(Color.green);
             d.setBackground(Color.green);
+            scoreX += 1;
+            if (!WinnerMessageShown && !playNgames)
+               JOptionPane.showMessageDialog(this, "Player 1 (X) won the game", "Winner Announcement",
+                     JOptionPane.INFORMATION_MESSAGE);
+            WinnerMessageShown = true;
          }
+
+         return true;
+      } else if (!b11.getText().equals("") &&
+            !b12.getText().equals("") &&
+            !b13.getText().equals("") &&
+            !b21.getText().equals("") &&
+            !b22.getText().equals("") &&
+            !b23.getText().equals("") &&
+            !b31.getText().equals("") &&
+            !b32.getText().equals("") &&
+            !b33.getText().equals("")) {
          GameOver = true;
          return true;
-      } else
-         return false;
+      }
+      return false;
    }
 
    private void reset() {
       GameOver = false;
+      WinnerMessageShown = false;
       b11.setText("");
       b21.setText("");
       b31.setText("");
@@ -423,6 +502,7 @@ public class TicTacToe extends JFrame
       b13.setBackground(null);
       b23.setBackground(null);
       b33.setBackground(null);
+
       try {
          bw.flush();
          // br.close();
@@ -431,8 +511,8 @@ public class TicTacToe extends JFrame
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
-      // Add any other game state reset logic here
-      connection.stop();
+      // // Add any other game state reset logic here
+      // connection.stop();
 
       prologProcess.destroy();
       myturn = true;
@@ -446,19 +526,19 @@ public class TicTacToe extends JFrame
          System.out.println(x);
       }
 
-      connection = new Thread() {
-         public void run() {
-            while (true) {
-               try {
-                  String s = br.readLine();
-                  computer_move(s);
-               } catch (Exception xx) {
-                  System.out.println(xx);
-               }
-            }
-         }
-      };
-      connection.start();
+      // connection = new Thread() {
+      // public void run() {
+      // while (true) {
+      // try {
+      // String s = br.readLine();
+      // computer_move(s);
+      // } catch (Exception xx) {
+      // System.out.println(xx);
+      // }
+      // }
+      // }
+      // };
+      // connection.start();
 
       try {
          prologProcess = Runtime.getRuntime().exec(prolog + " -f " + ttt);
@@ -471,20 +551,38 @@ public class TicTacToe extends JFrame
    }
 
    public void setupHVC() {
-
-      try {
-         Thread.sleep(100);
+      playNgames = false;
+      if (player1Human) {
          try {
-            bw.write("(1,1)." + "\n");
-            System.out.println("custom");
-            bw.flush();
+            Thread.sleep(100);
+            try {
+               bw.write("(1,1)." + "\n");
+               System.out.println("custom");
+               bw.flush();
 
-         } catch (Exception xx) {
-            System.out.println(xx);
+            } catch (Exception xx) {
+               System.out.println(xx);
+            }
+         } catch (InterruptedException e) {
+            e.printStackTrace();
          }
-      } catch (InterruptedException e) {
-         e.printStackTrace();
+      } else {
+         myturn = false;
+         try {
+            Thread.sleep(100);
+            try {
+               bw.write("(2,2)." + "\n");
+               System.out.println("custom");
+               bw.flush();
+
+            } catch (Exception xx) {
+               System.out.println(xx);
+            }
+         } catch (InterruptedException e) {
+            e.printStackTrace();
+         }
       }
+
    }
 
    public void setupCVC() {
@@ -497,7 +595,9 @@ public class TicTacToe extends JFrame
             bw.flush();
             int x = ThreadLocalRandom.current().nextInt(1, 4);
             int y = ThreadLocalRandom.current().nextInt(1, 4);
-            System.out.println("Ngames:\ncurrGame:"+currGame+"\nx:"+x+"   y:"+y);
+            myturn = false;
+            System.out.println("Ngames:\ncurrGame:" + currGame + "/" + NGames + "\nx:" + x + "   y:" + y + "\n scoreX: "
+                  + scoreX + "    scoreO:" + scoreO);
             if (x == 1) {
                if (y == 1) {
                   b11.setText("X");
@@ -610,7 +710,78 @@ public class TicTacToe extends JFrame
    }
 
    public void cvc() {
+      GameStats.setText(
+            "<html>CurrentGame:" + currGame + "/" + NGames + "<br>scores:<br>X:" + scoreX + "&emsp;O:" + scoreO);
+
       if (currGame == NGames) {
+         if (scoreO != 0 && scoreX != 0)
+            if (scoreO > scoreX) {
+               JOptionPane.showMessageDialog(controlPanel,
+                     "⠀⠀⠀⠀⢀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⠀⠀⠀⠀\n" + //
+                           "⢠⣤⣤⣤⣼⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣄⣤⣤⣠\n" + //
+                           "⢸⠀⡶⠶⠾⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡷⠶⠶⡆⡼\n" + //
+                           "⠈⡇⢷⠀⠀⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠇⠀⢸⢁⡗\n" + //
+                           "⠀⢹⡘⡆⠀⢹⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡸⠀⢀⡏⡼⠀\n" + //
+                           "⠀⠀⢳⡙⣆⠈⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠇⢀⠞⡼⠁⠀\n" + //
+                           "⠀⠀⠀⠙⣌⠳⣼⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣞⡴⣫⠞⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠈⠓⢮⣻⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡼⣩⠞⠉⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⠉⠛⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠞⠋⠁⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⢤⣀⠀⠀⠀⠀⢀⣠⠖⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⡇⢸⡏⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠖⠒⠓⠚⠓⠒⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⣀⣠⣞⣉⣉⣉⣉⣉⣉⣉⣉⣉⣉⣙⣆⣀⡀⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⡇ O is the winner    ⠀⡇⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⠓⠲⠶⠶⠶⠶⠶⠶⠶⠶⠶⠶⠶⠶⠶⠖⠃⠀⠀⠀⠀⠀⠀\nGame Over\n\nPlayer2 (O) is the winner🏆🏆\n\nFinal Scores are:\nX:"
+                           + scoreX + "  O:" + scoreO,
+                     "Selection", JOptionPane.INFORMATION_MESSAGE);
+            } else if (scoreX > scoreO) {
+               JOptionPane.showMessageDialog(controlPanel,
+                     "⠀⠀⠀⠀⢀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⠀⠀⠀⠀\n" + //
+                           "⢠⣤⣤⣤⣼⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣄⣤⣤⣠\n" + //
+                           "⢸⠀⡶⠶⠾⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡷⠶⠶⡆⡼\n" + //
+                           "⠈⡇⢷⠀⠀⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠇⠀⢸⢁⡗\n" + //
+                           "⠀⢹⡘⡆⠀⢹⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡸⠀⢀⡏⡼⠀\n" + //
+                           "⠀⠀⢳⡙⣆⠈⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠇⢀⠞⡼⠁⠀\n" + //
+                           "⠀⠀⠀⠙⣌⠳⣼⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣞⡴⣫⠞⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠈⠓⢮⣻⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡼⣩⠞⠉⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⠉⠛⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠞⠋⠁⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⢤⣀⠀⠀⠀⠀⢀⣠⠖⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⡇⢸⡏⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠖⠒⠓⠚⠓⠒⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⣀⣠⣞⣉⣉⣉⣉⣉⣉⣉⣉⣉⣉⣙⣆⣀⡀⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⡇ x is the winner    ⠀⡇⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⠓⠲⠶⠶⠶⠶⠶⠶⠶⠶⠶⠶⠶⠶⠶⠖⠃⠀⠀⠀⠀⠀⠀\nGame Over\n\nPlayer1 (X) is the winner\n\nFinal Scores are:\nX:"
+                           + scoreX + "  O:" + scoreO,
+                     "Selection", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+               JOptionPane.showMessageDialog(controlPanel,
+                     "⠀⠀⠀⠀⢀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⠀⠀⠀⠀\n" + //
+                           "⢠⣤⣤⣤⣼⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣄⣤⣤⣠\n" + //
+                           "⢸⠀⡶⠶⠾⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡷⠶⠶⡆⡼\n" + //
+                           "⠈⡇⢷⠀⠀⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠇⠀⢸⢁⡗\n" + //
+                           "⠀⢹⡘⡆⠀⢹⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡸⠀⢀⡏⡼⠀\n" + //
+                           "⠀⠀⢳⡙⣆⠈⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠇⢀⠞⡼⠁⠀\n" + //
+                           "⠀⠀⠀⠙⣌⠳⣼⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣞⡴⣫⠞⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠈⠓⢮⣻⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡼⣩⠞⠉⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⠉⠛⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠞⠋⠁⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⢤⣀⠀⠀⠀⠀⢀⣠⠖⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⡇⢸⡏⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠖⠒⠓⠚⠓⠒⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⣀⣠⣞⣉⣉⣉⣉⣉⣉⣉⣉⣉⣉⣙⣆⣀⡀⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⡇ x/O is the winner   ⠀⡇⠀⠀⠀⠀⠀⠀\n" + //
+                           "⠀⠀⠀⠀⠀⠀⠀⠓⠲⠶⠶⠶⠶⠶⠶⠶⠶⠶⠶⠶⠶⠶⠖⠃⠀⠀⠀⠀⠀⠀\nGame Over\n\nDRAW\n\nFinal Scores are:\nX:" + scoreX
+                           + "  O:" + scoreO,
+                     "Selection", JOptionPane.INFORMATION_MESSAGE);
+            }
+
+         scoreO = 0;
+         scoreX = 0;
          return;
       } else {
          reset();
